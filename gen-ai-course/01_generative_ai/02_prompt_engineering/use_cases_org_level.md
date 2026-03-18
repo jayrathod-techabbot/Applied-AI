@@ -914,6 +914,227 @@ and Timeline. Then recommend the best choice with reasoning."
 
 ---
 
+#### Additional Tree of Thought Examples
+
+**Example 1: HR - Talent Acquisition Strategy**
+
+```
+Prompt:
+"Our tech company needs to hire 20 engineers in the next 6 months amid a 
+tight talent market. Evaluate three hiring approaches:
+
+Approach A: Increase recruiter headcount (3 new recruiters)
+- Pros: More reach, dedicated resources
+- Cons: $150K additional cost, still competing for same talent
+- Timeline: 4-6 months to fill
+
+Approach B: Partner with coding bootcamps and upskill programs
+- Pros: Pipeline of motivated candidates, lower cost
+- Cons: Takes time to train, higher dropout risk
+- Timeline: 8-10 months for productive engineers
+
+Approach C: Acquire a small startup's team (10 people)
+- Pros: Experienced team ready to go, cultural fit
+- Cons: Premium price ($2M+), integration challenges
+- Timeline: 2-3 months
+
+For each approach, evaluate: Cost-effectiveness, Speed, Quality of hires, 
+and Scalability. Recommend the best strategy."
+```
+
+**Analysis Output:**
+
+| Approach | Cost | Speed | Quality | Scalability | Score |
+|----------|------|-------|---------|-------------|-------|
+| A: More Recruiters | Low (6/10) | Medium (5/10) | Medium (5/10) | Medium (5/10) | 5.3/10 |
+| B: Bootcamps | High (8/10) | Low (3/10) | Medium (6/10) | High (8/10) | 6.3/10 |
+| C: Acquisition | Low (2/10) | High (9/10) | High (9/10) | Medium (5/10) | 6.3/10 |
+
+**Recommendation:** Approach C for speed, but hedge with Approach A for sustained hiring needs
+
+---
+
+**Example 2: Finance - Investment Portfolio Rebalancing**
+
+```
+Prompt:
+"A retirement portfolio ($2M) currently has 70% stocks, 25% bonds, 5% cash. 
+Economic outlook shows high inflation and potential recession. Evaluate four 
+rebalancing strategies:
+
+Strategy A: Maintain current allocation
+- Rationale: Long-term perspective, don't time market
+- Risk: Drawdown in recession
+
+Strategy B: Shift to defensive (40% stocks, 50% bonds, 10% cash)
+- Rationale: Protect capital, wait for clarity
+- Risk: Miss recovery if market rebounds
+
+Strategy C: Increase stocks (80%, 15% bonds, 5% cash)
+- Rationale: Buy during downturn, higher long-term returns
+- Risk: Further decline possible
+
+Strategy D: Alternative assets (50% stocks, 20% bonds, 10% gold, 20% real estate)
+- Rationale: Diversification, inflation hedge
+- Risk: Less liquidity, higher fees
+
+For each strategy, analyze: Risk profile, Return potential, Inflation protection, 
+and Liquidity. Make a recommendation for a 60-year-old investor."
+```
+
+**Analysis Output:**
+
+| Strategy | Risk | Return | Inflation Protection | Liquidity | Suitability |
+|----------|------|--------|---------------------|-----------|-------------|
+| A: Maintain | High | Medium | Low | High | 6/10 |
+| B: Defensive | Low | Low | Medium | High | 7/10 |
+| C: Aggressive | Very High | High | Low | High | 4/10 |
+| D: Alternative | Medium | Medium | High | Low | 7/10 |
+
+**Recommendation:** Blend of Strategy B (60%) + Strategy D (40%) for balanced protection
+
+---
+
+**Example 3: Marketing - Product Launch Strategy**
+
+```
+Prompt:
+"A SaaS company is launching a new project management tool in a competitive 
+market. Evaluate four go-to-market strategies:
+
+Strategy A: Big bang launch (all features, mass marketing)
+- Pros: Maximum exposure, complete offering
+- Cons: High cost ($500K), competitor can react
+- Timeline: Launch in 3 months
+
+Strategy B: Beta program (limited users, word-of-mouth)
+- Pros: Real feedback, lower cost ($100K)
+- Cons: Slower adoption, may lose early movers
+- Timeline: Beta 2 months, full launch 5 months
+
+Strategy C: Freemium model (basic free, premium paid)
+- Pros: Rapid user acquisition, built-in conversion
+- Cons: Hard to convert, support costs
+- Timeline: Launch in 2 months
+
+Strategy D: Partnership launch (integrate with existing tools)
+- Pros: Access to established user base
+- Cons: Dependent on partner, less control
+- Timeline: 4-6 months
+
+For each strategy, evaluate: Market reach, Competitive advantage, Resource 
+requirements, and Time-to-revenue. Recommend the best approach for a startup 
+with limited budget ($150K)."
+```
+
+**Analysis Output:**
+
+| Strategy | Reach | Competitive Edge | Resources | Revenue | Score |
+|----------|-------|------------------|-----------|---------|-------|
+| A: Big Bang | High (9/10) | Medium (6/10) | Very High | Fast | 5/10 |
+| B: Beta | Low (4/10) | High (9/10) | Low | Slow | 7/10 |
+| C: Freemium | Very High (10/10) | High (8/10) | Medium | Medium | 8/10 |
+| D: Partnership | Medium (6/10) | Medium (6/10) | Medium | Medium | 6/10 |
+
+**Recommendation:** Strategy C (Freemium) - best fit for limited budget, fastest time-to-market
+
+---
+
+**Example 4: Legal - Contract Negotiation Strategy**
+
+```
+Prompt:
+"We are negotiating a vendor contract worth $500K/year. The vendor's standard 
+contract has several unfavorable terms. Evaluate four negotiation approaches:
+
+Approach A: Aggressive (demand all changes)
+- Pros: Maximum protection
+- Risk: Vendor walks away or reduces service quality
+- Timeline: 4-6 weeks
+
+Approach B: Selective focus (prioritize 3 critical items)
+- Pros: Realistic, preserves relationship
+- Risk: May miss some protection
+- Timeline: 2-3 weeks
+
+Approach C: Accept standard (focus on price/speed)
+- Pros: Fastest execution
+- Risk: Legal exposure
+- Timeline: 1 week
+
+Approach D: Alternative vendors (use competing offers)
+- Pros: Leverage for better terms
+- Risk: May lose preferred vendor
+- Timeline: 6-8 weeks
+
+Key issues to negotiate:
+1. Liability cap (currently unlimited)
+2. Termination clause (90-day notice required)
+3. Data ownership (vendor claims ownership)
+4. SLA penalties (none currently)
+
+For each approach, evaluate: Risk mitigation, Relationship impact, 
+Time investment, and Likelihood of success. Recommend the best strategy."
+```
+
+**Analysis Output:**
+
+| Approach | Risk Mitigation | Relationship | Time | Success Rate | Score |
+|----------|-----------------|---------------|------|--------------|-------|
+| A: Aggressive | High | Low | Medium | 40% | 5/10 |
+| B: Selective | Medium | High | Low | 75% | 8/10 |
+| C: Accept | Low | Very High | Very Low | 95% | 6/10 |
+| D: Alternative | High | Medium | Very High | 60% | 6/10 |
+
+**Recommendation:** Approach B - Focus on liability cap and data ownership as priorities, accept other terms
+
+---
+
+**Example 5: Operations - Supply Chain Disruption Response**
+
+```
+Prompt:
+"Our primary supplier (80% of components) just announced a 6-week production 
+shutdown due to raw material shortage. We have 4 weeks of inventory. Evaluate 
+four response strategies:
+
+Strategy A: Emergency sourcing from multiple alternate suppliers
+- Pros: Quick replacement possible
+- Cons: Higher cost (40% premium), quality variability
+- Capacity: Can cover 50% of needs
+
+Strategy B: Ration inventory and extend lead times to customers
+- Pros: Preserves inventory longer
+- Cons: Customer dissatisfaction, potential cancellations
+- Impact: 30% of orders delayed 2-3 weeks
+
+Strategy C: Expedite shipping from secondary supplier (air freight)
+- Pros: Maintains customer commitments
+- Cons: Very high cost (3x normal), limited quantity
+- Impact: Can cover 30% at high cost
+
+Strategy D: Negotiate partial supply from current supplier
+- Pros: Maintains relationship, quality
+- Cons: Uncertain outcome, may not succeed
+- Potential: 40% of normal supply
+
+For each strategy, evaluate: Customer impact, Cost impact, Risk level, 
+and Feasibility. Recommend the best combination."
+```
+
+**Analysis Output:**
+
+| Strategy | Customer Impact | Cost Impact | Risk | Feasibility | Score |
+|----------|-----------------|-------------|------|-------------|-------|
+| A: Alternate | Low | High (40%) | Medium | High | 7/10 |
+| B: Rationing | High | Low | Medium | High | 5/10 |
+| C: Air Freight | Very Low | Very High | Low | Medium | 5/10 |
+| D: Negotiate | Low | Low | High | Medium | 6/10 |
+
+**Recommendation:** Combine Strategy A + D: Secure alternate suppliers for 50% while negotiating partial supply, accept 15% customer impact on non-critical orders
+
+---
+
 ### 6. Prompt Chaining - High Complexity
 
 **What it is:** Breaking complex tasks into sequential steps where each AI response feeds into the next.
