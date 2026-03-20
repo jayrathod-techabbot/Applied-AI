@@ -1,0 +1,30 @@
+2024-01-15 14:22:45 INFO  app-server-01 System monitor started, polling interval: 30s
+2024-01-15 14:22:50 INFO  app-server-01 Load balancer health check: OK (3/3 instances)
+2024-01-15 14:23:01 ERROR app-server-01 CPU usage: 94.5% (threshold: 90%) — sustained for 3 minutes
+2024-01-15 14:23:05 CRITICAL app-server-01 Memory pressure detected: 87% used (threshold: 85%)
+2024-01-15 14:23:08 WARN  nginx Upstream response time degraded: avg 2340ms (normal: <500ms)
+2024-01-15 14:23:10 ERROR nginx HTTP 503 Service Unavailable - upstream timeout after 30s
+2024-01-15 14:23:12 ERROR app-server-01 Worker thread pool exhausted: 128/128 threads busy
+2024-01-15 14:23:15 CRITICAL app-server-01 CPU usage: 97.2% — approaching hard limit
+2024-01-15 14:23:18 ERROR nginx HTTP 503 Service Unavailable - upstream timeout after 30s
+2024-01-15 14:23:20 ERROR app-server-01 Request queue depth: 4820 requests pending (limit: 5000)
+2024-01-15 14:23:22 WARN  app-server-01 GC pause detected: 8.4 seconds (stop-the-world collection)
+2024-01-15 14:23:25 ERROR nginx HTTP 503 Service Unavailable - no healthy upstream
+2024-01-15 14:23:28 ERROR app-server-01 CPU usage: 96.1% (threshold: 90%)
+2024-01-15 14:23:30 ERROR app-server-01 Connection pool exhausted: database connections 100/100
+2024-01-15 14:23:33 CRITICAL app-server-01 Process java [pid:18423] consuming 68.4% CPU for 8 minutes
+2024-01-15 14:23:35 ERROR nginx HTTP 503 Service Unavailable - upstream timeout after 30s
+2024-01-15 14:23:38 WARN  app-server-01 Heap memory: 14.2GB / 16GB (threshold: 85%)
+2024-01-15 14:23:40 ERROR app-server-01 CPU usage: 93.8% (threshold: 90%)
+2024-01-15 14:23:42 ERROR nginx HTTP 500 Internal Server Error - application exception in /api/checkout
+2024-01-15 14:23:45 CRITICAL app-server-01 System load average: 48.2 (numCPUs: 8) — severely overloaded
+2024-01-15 14:23:48 ERROR app-server-01 CPU usage: 95.0% (threshold: 90%)
+2024-01-15 14:23:50 WARN  postgresql Max connection limit approaching: 490/500 active connections
+2024-01-15 14:23:52 ERROR app-server-01 Slow query detected: SELECT * FROM orders took 12.4s (threshold: 2s)
+2024-01-15 14:23:55 ERROR nginx HTTP 503 Service Unavailable - upstream timeout after 30s
+2024-01-15 14:23:58 CRITICAL app-server-01 Memory pressure detected: 91% used — OOM risk imminent
+2024-01-15 14:24:00 ERROR app-server-01 CPU usage: 98.1% (threshold: 90%) — peak recorded
+2024-01-15 14:24:02 ERROR app-server-01 Thread deadlock detected in order-processing-service module
+2024-01-15 14:24:05 CRITICAL app-server-01 Health check FAILED: /health returned HTTP 503
+2024-01-15 14:24:08 ERROR nginx HTTP 502 Bad Gateway - upstream app-server-01 unreachable
+2024-01-15 14:24:10 ERROR app-server-01 CPU usage: 96.7% — auto-scaling triggered (cooldown: 300s)

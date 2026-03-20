@@ -1,0 +1,132 @@
+version: "3.9"
+
+# ============================================================================
+# AI DevOps Incident Responder — Docker Compose
+#
+# Services:
+#   app       - FastAPI backend (port 8000)
+#   streamlit - Streamlit dashboard (port 8501)
+#
+# Usage:
+#   docker-compose up --build         # Start both services
+#   docker-compose up app             # Start API only
+#   docker-compose up streamlit       # Start UI only
+#   docker-compose down               # Stop all services
+#   docker-compose logs -f app        # Follow API logs
+#
+# Environment:
+#   Copy .env.example to .env and set OPENAI_API_KEY before running.
+#   Docker Compose will automatically load .env from the same directory.
+# ============================================================================
+
+services:
+
+  # --------------------------------------------------------------------------
+  # FastAPI backend — LangGraph incident analysis engine
+  # --------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      target: runtime
+    image: devops-incident-responder:latest
+    container_name: incident-responder-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # LLM configuration
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o}
+      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+
+      # Data paths (inside container)
+      - RUNBOOK_DIR=/app/data/runbooks
+      - INCIDENT_HISTORY_DIR=/app/data/incident_history
+
+      # Agent behavior
+      - MAX_REACT_ITERATIONS=${MAX_REACT_ITERATIONS:-3}
+      - DRY_RUN=${DRY_RUN:-true}
+
+      # Python
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Persist incident history and runbooks outside the container.
+      # This means resolved incidents survive container restarts.
+      - incident_data:/app/data/incident_history
+      - runbook_data:/app/data/runbooks
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    command: >
+      uvicorn api.routes:app
+        --host 0.0.0.0
+        --port 8000
+        --workers 2
+        --log-level info
+
+  # --------------------------------------------------------------------------
+  # Streamlit dashboard — Human-in-the-Loop UI
+  # --------------------------------------------------------------------------
+  streamlit:
+    build:
+      context: .
+      target: runtime
+    image: devops-incident-responder:latest
+    container_name: incident-responder-ui
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    environment:
+      # Points the Streamlit UI to the API container by Docker network DNS name
+      - API_BASE_URL=http://app:8000
+
+      # Pass through these vars in case the UI needs to call the LLM directly
+      # (currently it doesn't — all LLM calls go through the API)
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+
+      # Python
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Read-only access to sample logs for the pre-fill feature
+      - runbook_data:/app/data/runbooks:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    command: >
+      streamlit run ui/app.py
+        --server.port 8501
+        --server.address 0.0.0.0
+        --server.headless true
+        --server.enableCORS false
+        --server.enableXsrfProtection false
+
+
+# ============================================================================
+# Named volumes for persistent data
+# ============================================================================
+volumes:
+  incident_data:
+    name: devops-incident-history
+    driver: local
+
+  runbook_data:
+    name: devops-runbooks
+    driver: local
+
+
+# ============================================================================
+# Custom bridge network for service discovery
+# ============================================================================
+networks:
+  default:
+    name: incident-responder-network
+    driver: bridge

@@ -1,0 +1,32 @@
+# Core
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
+pydantic-settings==2.5.2
+
+# Azure OpenAI
+openai==1.51.0
+
+# Azure SDKs
+azure-identity==1.19.0
+azure-keyvault-secrets==4.8.0
+azure-monitor-opentelemetry==1.6.4
+
+# Retry logic
+tenacity==9.0.0
+
+# Rate limiting
+slowapi==0.1.9
+
+# Caching
+redis[asyncio]==5.2.0
+
+# Metrics
+prometheus-client==0.21.0
+
+# Observability / tracing
+opentelemetry-sdk==1.27.0
+opentelemetry-instrumentation-fastapi==0.48b0
+
+# Utilities
+python-dotenv==1.0.1

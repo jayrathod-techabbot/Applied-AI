@@ -1,0 +1,90 @@
+version: "3.9"
+
+# =============================================================================
+# Multi-Agent Customer Support System — Docker Compose
+#
+# Services:
+#   app       — FastAPI backend (port 8000)
+#   streamlit — Streamlit chat UI (port 8501)
+#
+# Usage:
+#   docker-compose up --build              # Build and start all services
+#   docker-compose up --build app          # API only
+#   docker-compose up --build streamlit    # UI only
+#   docker-compose down                    # Stop all services
+#   docker-compose logs -f app             # Follow API logs
+# =============================================================================
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # FastAPI Backend
+  # ---------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: support_api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # These override .env defaults for containerized deployment
+      KB_DIR: /app/data/knowledge_base
+      CONFIDENCE_THRESHOLD: "0.6"
+      MAX_HISTORY_MESSAGES: "20"
+    volumes:
+      # Mount the knowledge base directory so KB files can be updated
+      # without rebuilding the image
+      - ./data/knowledge_base:/app/data/knowledge_base:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+    networks:
+      - support_network
+
+  # ---------------------------------------------------------------------------
+  # Streamlit Chat UI
+  # ---------------------------------------------------------------------------
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: support_ui
+    # Override the default CMD to run Streamlit instead of FastAPI
+    command: >
+      streamlit run ui/app.py
+      --server.port 8501
+      --server.address 0.0.0.0
+      --server.headless true
+      --browser.gatherUsageStats false
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    environment:
+      KB_DIR: /app/data/knowledge_base
+      CONFIDENCE_THRESHOLD: "0.6"
+    volumes:
+      - ./data/knowledge_base:/app/data/knowledge_base:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - support_network
+
+# ---------------------------------------------------------------------------
+# Networks
+# ---------------------------------------------------------------------------
+networks:
+  support_network:
+    driver: bridge
+    name: support_network

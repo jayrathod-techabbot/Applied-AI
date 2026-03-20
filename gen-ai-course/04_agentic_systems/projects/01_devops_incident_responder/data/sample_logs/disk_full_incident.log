@@ -1,0 +1,20 @@
+2024-01-15 16:44:00 INFO  disk-monitor /var/log filesystem usage: 88% (monitoring threshold: 80%)
+2024-01-15 16:44:15 WARN  disk-monitor /var/log filesystem: 91% capacity used — approaching critical
+2024-01-15 16:44:30 WARN  logrotate Log rotation skipped: insufficient free space to compress archives
+2024-01-15 16:44:45 ERROR app-server-02 Failed to write application log: No space left on device (ENOSPC)
+2024-01-15 16:45:01 ERROR disk-monitor /var/log filesystem: 96% capacity used (threshold: 95%)
+2024-01-15 16:45:05 ERROR app-server-02 Database write failed: journal file creation error (ENOSPC)
+2024-01-15 16:45:10 ERROR postgresql WAL segment write failed: No space left on device
+2024-01-15 16:45:15 CRITICAL disk-monitor /var/log filesystem: 98% capacity — CRITICAL threshold breached
+2024-01-15 16:45:20 CRITICAL app-server-02 Core dump write failed: No space left on device
+2024-01-15 16:45:25 ERROR nginx Access log write failed: /var/log/nginx/access.log (ENOSPC)
+2024-01-15 16:45:30 CRITICAL app-server-02 No space left on device — write failed for /var/lib/app/data/session-store
+2024-01-15 16:45:35 ERROR app-server-02 User session persistence failed: disk full, sessions will be lost on restart
+2024-01-15 16:45:40 CRITICAL postgresql Checkpoint failed: could not write to file (No space left on device)
+2024-01-15 16:45:45 ERROR app-server-02 Health check FAILED: unable to write health status file
+2024-01-15 16:45:50 CRITICAL disk-monitor /var filesystem: 99.8% used — emergency alert triggered
+2024-01-15 16:45:55 ERROR app-server-02 HTTP 500 Internal Server Error — disk full prevents request processing
+2024-01-15 16:46:00 ERROR nginx HTTP 500 Internal Server Error — upstream app-server-02 disk full
+2024-01-15 16:46:05 ERROR app-server-02 Audit log write failed: ENOSPC — compliance risk!
+2024-01-15 16:46:10 CRITICAL app-server-02 Application CRASH: fatal I/O error — cannot write to disk
+2024-01-15 16:46:15 ERROR systemd app-server-02 service entered failed state (exit code: 1)
