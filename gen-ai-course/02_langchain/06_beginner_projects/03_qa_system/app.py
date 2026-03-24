@@ -3,13 +3,14 @@ Q&A System using LangChain and Ollama
 A beginner-friendly question answering app based on context
 """
 
-from langchain_community.chat_models import ChatOllama
-from langchain.chains import load_qa_chain
-from langchain.prompts import PromptTemplate
-from langchain.schema import Document
+from langchain_ollama import ChatOllama
+from langchain_core.prompts import PromptTemplate
+from langchain_core.documents import Document
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
 
 # Initialize Ollama model
-llm = ChatOllama(model="llama2", temperature=0.3, base_url="http://localhost:11434")
+llm = ChatOllama(model="llama3.1:8b", temperature=0.3, base_url="http://localhost:11434")
 
 # Sample context - you can replace this with your own text
 context = """
@@ -52,8 +53,16 @@ prompt = PromptTemplate(
     template=prompt_template, input_variables=["context", "question"]
 )
 
-# Load QA chain (stuff type - passes all to LLM)
-qa_chain = load_qa_chain(llm, chain_type="stuff", prompt=prompt)
+# Build QA chain using LCEL (LangChain Expression Language)
+qa_chain = (
+    {
+        "context": RunnablePassthrough() | (lambda x: x["context"]),
+        "question": RunnablePassthrough() | (lambda x: x["question"]),
+    }
+    | prompt
+    | llm
+    | StrOutputParser()
+)
 
 print("=" * 50)
 print("❓ Q&A System - Type 'exit' to quit")
@@ -77,12 +86,15 @@ while True:
     # Get answer
     print("⏳ Thinking...")
     try:
-        result = qa_chain.invoke({"input_documents": doc, "question": question})
+        result = qa_chain.invoke({
+            "context": "\n".join([d.page_content for d in doc]),
+            "question": question
+        })
 
         print("\n" + "=" * 40)
         print("💡 ANSWER:")
         print("=" * 40)
-        print(result["output_text"])
+        print(result)
         print("=" * 40)
 
     except Exception as e:

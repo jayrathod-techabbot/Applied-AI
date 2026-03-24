@@ -3,13 +3,13 @@ Waiter Bot using LangChain and Ollama
 A restaurant waiter that takes orders and helps customers
 """
 
-from langchain_community.chat_models import ChatOllama
-from langchain.chains import ConversationChain
-from langchain.memory import ConversationBufferMemory
-from langchain.prompts import ChatPromptTemplate
+from langchain_ollama import ChatOllama
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.output_parsers import StrOutputParser
 
 # Initialize Ollama model
-llm = ChatOllama(model="llama2", temperature=0.7, base_url="http://localhost:11434")
+llm = ChatOllama(model="llama3.1:8b", temperature=0.7, base_url="http://localhost:11434")
 
 # Restaurant menu with prices
 MENU = """
@@ -68,16 +68,20 @@ Here's the menu:
 When calculating the bill, add up all items and give the total.
 """
 
-# Create chat prompt template
+# Create chat prompt template with message history placeholder
 prompt = ChatPromptTemplate.from_messages(
-    [("system", system_prompt), ("human", "{{input}}")]
+    [
+        ("system", system_prompt),
+        MessagesPlaceholder(variable_name="history"),
+        ("human", "{input}"),
+    ]
 )
 
-# Create conversation memory
-memory = ConversationBufferMemory(return_messages=True)
+# Create conversation memory as a plain message list
+history = []
 
-# Create conversation chain
-conversation = ConversationChain(llm=llm, memory=memory, prompt=prompt, verbose=False)
+# Build LCEL chain
+chain = prompt | llm | StrOutputParser()
 
 print("=" * 50)
 print("🍽️  Waiter Bot - Type 'exit' to leave")
@@ -107,16 +111,20 @@ while True:
             or "total" in user_input.lower()
         ):
             # Get conversation history
-            history = memory.chat_memory.messages
             print("\n🤖 Alex: Let me check your order...")
             print("\n--- Your Order So Far ---")
             for msg in history:
-                if hasattr(msg, "type") and msg.type == "human":
+                if isinstance(msg, HumanMessage):
                     print(f"You: {msg.content}")
             print("-------------------------\n")
 
         # Get response
-        response = conversation.predict(input=user_input)
+        response = chain.invoke({"input": user_input, "history": history})
+
+        # Update memory manually
+        history.append(HumanMessage(content=user_input))
+        history.append(AIMessage(content=response))
+
         print(f"\n🤖 Alex: {response}")
 
     except KeyboardInterrupt:

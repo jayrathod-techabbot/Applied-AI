@@ -30,7 +30,7 @@ class SimpleRAGPipeline:
     def load_documents(self, docs: List[str], sources: List[str] = None):
         """Load and chunk documents."""
         sources = sources or [f"doc_{i}" for i in range(len(docs))]
-
+        
         for i, doc in enumerate(docs):
             for j, chunk in enumerate(self._chunk_text(doc)):
                 self.chunk_metadata.append(
