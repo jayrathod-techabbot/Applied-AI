@@ -1,25 +1,12 @@
 from __future__ import annotations
-
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
-
-class BookMetadata(BaseModel):
+class BookRecommendation(BaseModel):
     title: str
     author: str
-    genre: str
-    year: int
-    description: str
-    thumbnail: Optional[str] = None
-    average_rating: Optional[float] = None
-    num_pages: Optional[int] = None
-
-
-class SearchResult(BaseModel):
-    book: BookMetadata
+    reason: str
     score: float
-    chunk_text: str
-
 
 class RecommendationRequest(BaseModel):
     query: str = Field(..., min_length=1, description="Natural-language query from the user")
@@ -29,8 +16,6 @@ class RecommendationRequest(BaseModel):
     )
     top_k: int = Field(default=5, ge=1, le=50, description="Number of recommendations to return")
 
-
 class RecommendationResponse(BaseModel):
     query: str
-    recommendations: List[SearchResult]
-    explanation: str
+    recommendations: List[BookRecommendation]
