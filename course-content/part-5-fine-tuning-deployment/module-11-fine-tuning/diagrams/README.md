@@ -1,0 +1,349 @@
+# Module 11: Diagrams — Fine-Tuning LLMs
+
+This directory contains text-based and Mermaid diagrams illustrating key concepts from Module 11.
+
+---
+
+## 1. Fine-Tuning Decision Flowchart
+
+### Mermaid Diagram
+
+```mermaid
+flowchart TD
+    Start[Need model to behave differently?] --> Q1{Does prompt<br>engineering work?}
+    Q1 -->|Yes| UsePrompt[Use Prompt Engineering]
+    Q1 -->|No| Q2{Need external<br>knowledge?}
+    Q2 -->|Yes| UseRAG[Use RAG]
+    Q2 -->|No| Q3{Need consistent<br>tone/format/domain?}
+    Q3 -->|No| UsePrompt2[Refine Prompt Engineering]
+    Q3 -->|Yes| Q4{Do you have<br>labeled data?}
+    Q4 -->|No| GenData[Generate synthetic data<br>with large model]
+    Q4 -->|Yes| Q5{How much GPU<br>memory available?}
+    Q5 -->|< 24 GB| UseQLoRA[Use QLoRA]
+    Q5 -->|24-80 GB| UseLoRA[Use LoRA]
+    Q5 -->|> 80 GB| UseFullFT[Use Full Fine-Tuning]
+    GenData --> Q5
+
+    style Start fill:#4CAF50,color:#fff
+    style UsePrompt fill:#2196F3,color:#fff
+    style UseRAG fill:#2196F3,color:#fff
+    style UsePrompt2 fill:#2196F3,color:#fff
+    style UseQLoRA fill:#FF9800,color:#fff
+    style UseLoRA fill:#FF9800,color:#fff
+    style UseFullFT fill:#F44336,color:#fff
+    style GenData fill:#9C27B0,color:#fff
+```
+
+### ASCII Decision Tree
+
+```
+┌─────────────────────────────────┐
+│   Need model to behave          │
+│   differently?                  │
+└───────────────┬─────────────────┘
+                │
+                ▼
+    ┌───────────────────────┐
+    │ Does prompt engineering│
+    │ work?                  │
+    └───────┬───────┬───────┘
+            │       │
+          YES      NO
+            │       │
+            ▼       ▼
+    ┌──────────┐  ┌──────────────────┐
+    │ Use Prompt│  │ Need external    │
+    │ Engineer- │  │ knowledge?       │
+    │ ing       │  └──┬──────────┬───┘
+    └──────────┘     │          │
+                   YES         NO
+                     │          │
+                     ▼          ▼
+             ┌──────────┐ ┌───────────────────┐
+             │ Use RAG  │ │ Need consistent   │
+             └──────────┘ │ tone/format?      │
+                          └──┬────────────┬───┘
+                           YES           NO
+                             │            │
+                             ▼            ▼
+                    ┌──────────────┐ ┌──────────┐
+                    │ Have labeled │ │ Refine   │
+                    │ data?        │ │ Prompt   │
+                    └──┬────────┬──┘ └──────────┘
+                     YES       NO
+                       │        │
+                       ▼        ▼
+              ┌────────────┐ ┌────────────────┐
+              │ GPU Memory?│ │ Generate data  │
+              └─┬────┬──┬──┘ │ with large LLM │
+                │    │  │    └───────┬────────┘
+           <24GB │ 24-80 │ >80GB     │
+                │    │  │           │
+                ▼    ▼  ▼           ▼
+             ┌────┐┌────┐┌──────┐  ┌──────┐
+             │QLoRA││LoRA││Full  │  │GPU   │
+             └────┘└────┘│FT    │  │Check │
+                         └──────┘  └──────┘
+```
+
+---
+
+## 2. LoRA Architecture Diagram
+
+### Mermaid Diagram
+
+```mermaid
+graph LR
+    subgraph Base["Base Model (Frozen)"]
+        Input["Input<br>Hidden State<br>(d × 1)"]
+        W0["W₀<br>(d × k)<br>FROZEN"]
+        Output1["W₀ · x"]
+    end
+
+    subgraph LoRA_Path["LoRA Adapter (Trainable)"]
+        B["B Matrix<br>(d × r)<br>Trainable"]
+        A["A Matrix<br>(r × k)<br>Trainable"]
+        Scale["Scale: α/r"]
+        Output2["(α/r) · B·A·x"]
+    end
+
+    subgraph Merge["Combined Output"]
+        Add["W₀·x + (α/r)·B·A·x"]
+        Final["Final Output<br>(d × 1)"]
+    end
+
+    Input --> W0 --> Output1
+    Input --> A --> B --> Scale --> Output2
+    Output1 --> Add
+    Output2 --> Add --> Final
+
+    style W0 fill:#ccc,color:#333
+    style B fill:#4CAF50,color:#fff
+    style A fill:#4CAF50,color:#fff
+    style Scale fill:#FF9800,color:#fff
+    style Add fill:#2196F3,color:#fff
+    style Final fill:#2196F3,color:#fff
+```
+
+### ASCII LoRA Architecture
+
+```
+                    Input Hidden State x (d × 1)
+                           │
+                 ┌─────────┴──────────┐
+                 │                    │
+                 ▼                    ▼
+    ┌─────────────────────┐  ┌──────────────────┐
+    │   Base Weight W₀    │  │   LoRA Path      │
+    │   (d × k)           │  │   (Trainable)    │
+    │                     │  │                  │
+    │   ██ FROZEN ██      │  │       ┌───┐     │
+    │   Do not update     │  │   x ──┤ A │     │
+    │                     │  │       │r×k│     │
+    │                     │  │       └─┬─┘     │
+    │                     │  │         │       │
+    │                     │  │       ┌─▼─┐     │
+    │                     │  │   ┌───┤ B │     │
+    │                     │  │   │   │d×r│     │
+    │                     │  │   │   └─┬─┘     │
+    │                     │  │   │     │       │
+    │                     │  │   │  ×──▼──     │
+    │                     │  │   │  α/r        │
+    └──────────┬──────────┘  └───┼─────────────┘
+               │                 │
+               │    ┌────────────┘
+               ▼    ▼
+            ┌──────────────┐
+            │  W₀·x + (α/r)·B·A·x  │
+            │  (Addition)            │
+            └──────────┬─────────────┘
+                       │
+                       ▼
+                 Output (d × 1)
+
+    Parameter Comparison:
+    ┌───────────────────────────────────────┐
+    │ Full matrix:  d × k = 4096 × 4096    │
+    │             = 16,777,216 parameters   │
+    │                                       │
+    │ LoRA (r=16): d×r + r×k               │
+    │            = 4096×16 + 16×4096        │
+    │            = 131,072 parameters       │
+    │                                       │
+    │ Reduction: 128× fewer parameters      │
+    │ Trainable: 0.78% of original          │
+    └───────────────────────────────────────┘
+```
+
+---
+
+## 3. Training Pipeline
+
+### Mermaid Diagram
+
+```mermaid
+flowchart TD
+    subgraph Data["Data Preparation"]
+        D1[Collect labeled examples] --> D2[Format to JSONL]
+        D2 --> D3[Deduplicate & filter]
+        D3 --> D4[Train/val split 95/5]
+    end
+
+    subgraph Model["Model Setup"]
+        M1[Load pre-trained model] --> M2{Quantize?}
+        M2 -->|Yes| M3[4-bit NF4 quantization]
+        M2 -->|No| M4[FP16 / BF16]
+        M3 --> M5[Apply LoRA adapters]
+        M4 --> M5
+    end
+
+    subgraph Train["Training Loop"]
+        T1[Forward pass] --> T2[Compute loss]
+        T2 --> T3[Backward pass]
+        T3 --> T4[Update LoRA weights only]
+        T4 --> T5{Validation loss<br>improving?}
+        T5 -->|Yes| T1
+        T5 -->|No| T6[Early stopping]
+    end
+
+    subgraph Post["Post-Training"]
+        P1[Save adapter weights] --> P2[Merge into base model]
+        P2 --> P3[Convert to deployment format]
+        P3 --> P4[Deploy to endpoint]
+    end
+
+    D4 --> M1
+    M5 --> T1
+    T6 --> P1
+
+    style Data fill:#E3F2FD,stroke:#2196F3
+    style Model fill:#FFF3E0,stroke:#FF9800
+    style Train fill:#E8F5E9,stroke:#4CAF50
+    style Post fill:#FCE4EC,stroke:#F44336
+```
+
+### ASCII Training Pipeline
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        DATA PREPARATION                             │
+│                                                                     │
+│  ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────────┐    │
+│  │ Collect   │──▶│ Format   │──▶│ Dedup &  │──▶│ Train / Val  │    │
+│  │ labeled   │   │ to JSONL │   │ Filter   │   │ Split (95/5) │    │
+│  │ examples  │   │          │   │          │   │              │    │
+│  └──────────┘   └──────────┘   └──────────┘   └──────┬───────┘    │
+└───────────────────────────────────────────────────────┼────────────┘
+                                                        │
+┌───────────────────────────────────────────────────────┼────────────┐
+│                        MODEL SETUP                     │            │
+│                                                        ▼            │
+│  ┌──────────────────┐   ┌───────────────┐   ┌──────────────────┐  │
+│  │ Load pre-trained │──▶│ Quantize?     │──▶│ Apply LoRA       │  │
+│  │ model            │   │               │   │ adapters         │  │
+│  │ (e.g., Llama-2)  │   │ 4-bit NF4    │   │ r=16, α=32       │  │
+│  └──────────────────┘   │ or FP16/BF16  │   │ target: q,v,k,o  │  │
+│                         └───────────────┘   └────────┬─────────┘  │
+└──────────────────────────────────────────────────────┼─────────────┘
+                                                        │
+┌───────────────────────────────────────────────────────┼─────────────┐
+│                        TRAINING LOOP                   │            │
+│                                                        ▼            │
+│    ┌─────────────────────────────────────────────────────────┐     │
+│    │                                                         │     │
+│    │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌─────────┐ │     │
+│    │  │ Forward  │─▶│ Compute  │─▶│ Backward │─▶│ Update  │ │     │
+│    │  │ Pass     │  │ Loss     │  │ Pass     │  │ LoRA    │ │     │
+│    │  └──────────┘  └──────────┘  └──────────┘  │ Weights │ │     │
+│    │       ▲                                      └────┬────┘ │     │
+│    │       │         ┌─────────────────────┐          │      │     │
+│    │       └─────────│ Validation Loss     │◀─────────┘      │     │
+│    │                 │ improving?          │                  │     │
+│    │                 │ YES → continue      │                  │     │
+│    │                 │ NO  → early stop ───┼──────┐          │     │
+│    │                 └─────────────────────┘      │          │     │
+│    └──────────────────────────────────────────────┼──────────┘     │
+└───────────────────────────────────────────────────┼────────────────┘
+                                                    │
+┌───────────────────────────────────────────────────┼────────────────┐
+│                        POST-TRAINING              │                │
+│                                                   ▼                │
+│  ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────────┐   │
+│  │ Save     │──▶│ Merge    │──▶│ Convert  │──▶│ Deploy to    │   │
+│  │ adapter  │   │ W₀+BA    │   │ to ONNX/ │   │ endpoint     │   │
+│  │ (~16 MB) │   │          │   │ GGUF     │   │              │   │
+│  └──────────┘   └──────────┘   └──────────┘   └──────────────┘   │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 4. Memory Comparison Diagram
+
+### ASCII Memory Bars
+
+```
+GPU Memory Required for Llama-2-7B Fine-Tuning:
+
+Full Fine-Tuning (FP32)
+████████████████████████████████████████████████████████████ 120 GB
+
+LoRA (FP16 base)
+██████████████████ 30 GB
+
+QLoRA (4-bit base)
+██████ 10 GB
+
+Inference Only (4-bit)
+██ 4 GB
+
+0    20    40    60    80    100   120   140 (GB)
+├─────┼─────┼─────┼─────┼─────┼─────┼─────┤
+```
+
+---
+
+## 5. Technique Selection Matrix
+
+### ASCII Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                   TECHNIQUE SELECTION MATRIX                     │
+├─────────────────┬───────────┬───────────┬───────────┬───────────┤
+│                 │ Prompt    │ RAG       │ LoRA/     │ Full      │
+│                 │ Eng.      │           │ QLoRA     │ Fine-Tune │
+├─────────────────┼───────────┼───────────┼───────────┼───────────┤
+│ Setup Effort    │ ██░░░░░░░ │ ████░░░░░ │ ██████░░░ │ ████████░ │
+│                 │ Low       │ Medium    │ Medium-Hi │ High      │
+├─────────────────┼───────────┼───────────┼───────────┼───────────┤
+│ GPU Memory      │ N/A       │ N/A       │ 10-30 GB  │ 120+ GB   │
+├─────────────────┼───────────┼───────────┼───────────┼───────────┤
+│ Data Needed     │ 0-10 ex.  │ Documents │ 100-10K   │ 1K-100K   │
+├─────────────────┼───────────┼───────────┼───────────┼───────────┤
+│ Output Quality  │ Good      │ Good      │ Very Good │ Best      │
+├─────────────────┼───────────┼───────────┼───────────┼───────────┤
+│ Knowledge Update│ Instant   │ Instant   │ Retrain   │ Retrain   │
+├─────────────────┼───────────┼───────────┼───────────┼───────────┤
+│ Best For        │ Proto-    │ Dynamic   │ Domain    │ Maximum   │
+│                 │ typing    │ knowledge │ behavior  │ quality   │
+└─────────────────┴───────────┴───────────┴───────────┴───────────┘
+
+Decision Path:
+  Start here ──▶ Prompt Eng. enough? ──Yes──▶ Done
+                      │
+                      No
+                      │
+                      ▼
+                  Need external knowledge? ──Yes──▶ Use RAG
+                      │
+                      No
+                      │
+                      ▼
+                  Have labeled data + GPU? ──Yes──▶ LoRA / QLoRA
+                      │                            (or Full FT if
+                      No                            GPU allows)
+                      │
+                      ▼
+                  Generate synthetic data ──▶ Then fine-tune
+```
