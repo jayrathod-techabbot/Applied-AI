@@ -1,18 +1,37 @@
 from __future__ import annotations
+from enum import Enum
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 from datetime import datetime
 
 
+class SyncAction(str, Enum):
+    FULL_SYNC = "full_sync"
+    INCREMENTAL_SYNC = "incremental_sync"
+    SOURCE_SYNC = "source_sync"
+
+
+class SyncSource(str, Enum):
+    GOOGLE_CALENDAR = "google_calendar"
+    GOOGLE_DRIVE = "google_drive"
+    GMAIL = "gmail"
+
+
+class SyncDirection(str, Enum):
+    NOTION_TO_SOURCE = "notion_to_source"
+    SOURCE_TO_NOTION = "source_to_notion"
+    BIDIRECTIONAL = "bidirectional"
+
+
 class SyncRequest(BaseModel):
-    action: str = Field(..., description="full_sync, incremental_sync, or source_sync")
-    sources: Optional[List[str]] = Field(
+    action: SyncAction = Field(..., description="Type of sync to perform")
+    sources: Optional[List[SyncSource]] = Field(
         default=None,
-        description="Sources to sync: google_calendar, google_drive, gmail",
+        description="Sources to sync",
     )
-    direction: str = Field(
-        default="bidirectional",
-        description="notion_to_source, source_to_notion, or bidirectional",
+    direction: SyncDirection = Field(
+        default=SyncDirection.BIDIRECTIONAL,
+        description="Direction of sync",
     )
 
 
