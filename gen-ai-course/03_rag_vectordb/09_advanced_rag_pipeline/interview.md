@@ -15,7 +15,7 @@
 2. **Processing Layer:**
    - Chunking (semantic, recursive, fixed-size strategies)
    - Embedding generation (Sentence Transformers, OpenAI embeddings)
-   - Image captioning (BLIP, ViT-GPT2 models)
+   - Image captioning (BLIP-Bootstrapping Language-Image Pre-training, ViT-GPT2-Vision Transformer-GPT2 models)
 
 3. **Storage Layer:**
    - Vector database (Chroma, Pinecone, Milvus)
@@ -23,9 +23,9 @@
    - Version control for documents
 
 4. **Retrieval Layer:**
-   - Vector similarity search (HNSW, IVF indexing)
+   - Vector similarity search (HNSW - Hierarchical Navigable Small World, IVF - Inverted File indexing)
    - Keyword search (BM25, TF-IDF)
-   - Hybrid search (RRF, weighted scoring)
+   - Hybrid search (RRF - Reciprocal Rank Fusion, weighted scoring)
    - Optional: Graph-based retrieval
 
 5. **Generation Layer:**
@@ -41,7 +41,7 @@
 
 1. **Image Processing:**
    - Extract images using Unstructured.io or PDFPlumber
-   - Generate captions with vision-language models (BLIP, CLIP)
+   - Generate captions with vision-language models (BLIP - Bootstrapping Language-Image Pre-training, CLIP - Cross-modal Language-Image Pre-training)
    - Store captions as separate text chunks with image metadata
 
 2. **Table Processing:**
@@ -81,6 +81,308 @@ Query
 ```
 
 **RRF Formula:** Score = Σ(1 / (k + rank)) across result sets
+
+**Benefits:**
+- No need to normalize scores across different search methods
+- Simple, parameter-free combination
+- Works well with any number of result sets
+
+# Reciprocal Rank Fusion (RRF)
+
+Reciprocal Rank Fusion (RRF) is a ranking technique used to combine results from multiple retrieval systems.
+
+It is commonly used in:
+
+- Hybrid Search
+- RAG pipelines
+- Search Engines
+- Vector + Keyword retrieval systems
+
+Examples:
+
+- BM25 + Vector Search
+- Dense Retrieval + Sparse Retrieval
+- Multiple embedding models
+
+---
+
+# RRF Formula
+
+$$
+Score(d) = \sum_{i=1}^{n} \frac{1}{k + r_i(d)}
+$$
+
+---
+
+# Where
+
+| Symbol | Meaning |
+|---|---|
+| \( d \) | Document/result |
+| \( n \) | Number of ranking systems |
+| \( r_i(d) \) | Rank of document \( d \) in ranking system \( i \) |
+| \( k \) | Constant to reduce dominance of top ranks |
+| \( Score(d) \) | Final fused score |
+
+
+---
+
+# Intuition
+
+RRF gives higher importance to documents that appear consistently across multiple result lists.
+
+Instead of using raw similarity scores, it uses only ranks.
+
+This makes RRF:
+
+- Simple
+- Robust
+- Model-independent
+
+---
+
+# Why Use RRF?
+
+Different retrieval systems may rank documents differently.
+
+Example:
+
+| System | Top Result |
+|---|---|
+| BM25 | Keyword relevance |
+| Vector Search | Semantic relevance |
+
+RRF combines both rankings effectively.
+
+---
+
+# Example
+
+Suppose we have two retrieval systems:
+
+## BM25 Results
+
+| Rank | Document |
+|---|---|
+| 1 | DocA |
+| 2 | DocB |
+| 3 | DocC |
+
+---
+
+## Vector Search Results
+
+| Rank | Document |
+|---|---|
+| 1 | DocB |
+| 2 | DocC |
+| 3 | DocD |
+
+---
+
+# Using RRF
+
+Assume:
+
+```text
+k = 60
+```
+
+---
+
+# Score for DocB
+
+DocB appears:
+
+- Rank 2 in BM25
+- Rank 1 in Vector Search
+
+Using:
+
+```text
+k = 60
+```
+
+So:
+
+$$
+Score(DocB) = \frac{1}{60+2} + \frac{1}{60+1}
+$$
+
+Calculation:
+
+$$
+= \frac{1}{62} + \frac{1}{61}
+$$
+
+$$
+\approx 0.0161 + 0.0164
+$$
+
+$$
+\approx 0.0325
+$$
+
+---
+
+# Score for DocA
+
+DocA appears only once:
+
+- Rank 1 in BM25
+
+Using:
+
+```text
+k = 60
+```
+
+So:
+
+$$
+Score(DocA) = \frac{1}{60+1}
+$$
+
+Calculation:
+
+$$
+= \frac{1}{61}
+$$
+
+$$
+\approx 0.0164
+$$
+---
+
+# Observation
+
+Even though DocA was rank 1 in one system:
+
+- DocB appeared in BOTH systems
+- So DocB gets higher final score
+
+This improves retrieval quality.
+
+---
+
+# Why the Constant `k`?
+
+The constant `k` prevents top-ranked documents from dominating too aggressively.
+
+Typical value:
+
+```text
+k = 60
+```
+
+Smaller `k`:
+- More emphasis on top ranks
+
+Larger `k`:
+- Smoother ranking influence
+
+---
+
+# Advantages of RRF
+
+| Benefit | Explanation |
+|---|---|
+| Simple | Easy to implement |
+| Robust | Works across retrieval systems |
+| Score-independent | Uses ranks only |
+| Effective | Strong hybrid retrieval performance |
+| No normalization needed | Avoids score scaling issues |
+
+---
+
+# RRF in Hybrid Search
+
+Typical modern RAG pipeline:
+
+```text
+User Query
+    ↓
+┌───────────────┐
+│ BM25 Search   │
+└───────────────┘
+        +
+┌───────────────┐
+│ Vector Search │
+└───────────────┘
+        ↓
+RRF Fusion
+        ↓
+Final Ranked Results
+        ↓
+LLM Context
+```
+
+---
+
+# Python Example
+
+```python
+from collections import defaultdict
+
+bm25 = ["DocA", "DocB", "DocC"]
+vector = ["DocB", "DocC", "DocD"]
+
+k = 60
+scores = defaultdict(float)
+
+for rank, doc in enumerate(bm25, start=1):
+    scores[doc] += 1 / (k + rank)
+
+for rank, doc in enumerate(vector, start=1):
+    scores[doc] += 1 / (k + rank)
+
+final = sorted(
+    scores.items(),
+    key=lambda x: x[1],
+    reverse=True
+)
+
+print(final)
+# ('DocB', 0.03252247488101534), ('DocC', 0.03200204813108039), ('DocA', 0.01639344262295082), ('DocD', 0.015873015873015872)]
+
+```
+
+---
+
+# Common Use Cases
+
+| Application | Usage |
+|---|---|
+| Hybrid RAG | BM25 + embeddings |
+| Search Engines | Multiple ranking models |
+| Ecommerce Search | Keyword + semantic search |
+| Recommendation Systems | Combine rankers |
+| Multimodal Search | Text + image retrieval |
+
+---
+
+# RRF vs Score Averaging
+
+| Method | Problem |
+|---|---|
+| Raw score averaging | Scores may have different scales |
+| RRF | Uses only ranks, more stable |
+
+---
+
+# Used In
+
+- Elasticsearch Hybrid Search
+- Azure AI Search
+- OpenSearch
+- LangChain retrieval pipelines
+- LlamaIndex hybrid retrievers
+
+---
+
+# Key Takeaway
+
+RRF improves retrieval by rewarding documents that consistently rank well across multiple retrieval systems.
 
 ---
 
@@ -527,3 +829,14 @@ async def bulk_ingest(documents, batch_size=100):
         batch = documents[i:i+batch_size]
         await process_batch(batch)
 ```
+
+---
+
+## See Also
+
+For comprehensive interview preparation covering all pillars of RAG expertise, see [interview_guide.md](./interview_guide.md) which provides:
+
+- Advanced theoretical concepts for each RAG component
+- Practical coding scenarios with expected solutions
+- Junior-to-staff level questions with "Perfect Answer" frameworks
+- Mathematical intuition balanced with engineering practice

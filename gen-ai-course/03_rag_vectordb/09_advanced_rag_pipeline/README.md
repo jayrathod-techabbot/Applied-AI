@@ -45,6 +45,7 @@ By the end of this module, you will be able to:
 ├── concepts.md                 # Technical concepts
 ├── solution.py                 # Working implementation
 ├── interview.md                # Interview Q&A
+├── interview_guide.md          # Comprehensive interview preparation
 ├── exercise.py                 # Hands-on exercises
 ├── references.md               # Additional resources
 └── examples/                   # Code examples directory
