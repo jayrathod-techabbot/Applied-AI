@@ -23,6 +23,19 @@ This module now includes comprehensive production guidance:
 - **[Solutions & Best Practices](./07_production_issues/solutions.md)** - Proven fixes and implementation patterns
 - **[System Design for Production](./07_production_issues/system_design.md)** - Architecture patterns for scalable, reliable RAG systems
 
+## Advanced RAG Pipeline (New)
+
+**[09_advanced_rag_pipeline](./09_advanced_rag_pipeline/)** covers building production RAG systems:
+
+- **End-to-End Pipeline** - Complete RAG flow from ingestion to generation
+- **Data Ingestion** - PDF, DOCX, PPT processing with table/image extraction
+- **Multi-modal RAG** - Image captioning, table handling, semantic chunking
+- **Hybrid Search** - Vector + keyword search with RRF fusion
+- **FastAPI** - Production API endpoints with streaming
+- **LLM Integration** - OpenAI, Claude via AWS Bedrock
+- **Evaluation** - RAGAS, Langfuse/LangSmith, DeepEval
+- **Agentic AI** - LangGraph workflows
+
 ## Prerequisites
 
 - Python programming basics
@@ -63,7 +76,8 @@ Each topic includes:
 ├── 04_rag_implementation/     # End-to-end pipeline
 ├── 05_retrieval_techniques/   # Advanced retrieval strategies
 ├── 06_rag_evaluation/         # Metrics and evaluation
-└── 07_production_issues/      # Production debugging & solutions
+├── 07_production_issues/      # Production debugging & solutions
+└── 09_advanced_rag_pipeline/  # Production RAG with multi-modal, hybrid search, APIs
 ```
 
 ## Next Steps
